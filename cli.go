@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"strings"
 	"syscall"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -15,12 +14,13 @@ import (
 )
 
 func main() {
-	body, err := os.ReadFile("./db.cfg")
+	db_cfg, err := readConfig("db.cfg")
 	if err != nil {
-		fmt.Println("db.cfg not found in local directory.")
+		fmt.Println(err)
 		return
 	}
-	db, err := sql.Open("mysql", string(body))
+
+	db, err := sql.Open("mysql", getVar("DSN", db_cfg))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -49,7 +49,7 @@ func main() {
 		}
 	}
 
-	if(pswd != pass){
+	if pswd != pass {
 		fmt.Println("Incorrect username or password.")
 		return
 	}
@@ -57,7 +57,7 @@ func main() {
 	fmt.Printf("Welcome, %s.\n", usr)
 }
 
-// login loop, prompt uname and pass
+// prompt uname and pass
 func login() (string, string, error) {
 	var err error
 	var uname string
@@ -77,12 +77,4 @@ func login() (string, string, error) {
 	password = fmt.Sprintf("%x", md5.Sum(bword))
 	fmt.Println()
 	return stripFormatting(uname), password, nil
-}
-
-// remove lf and cr from string
-func stripFormatting(str string) string {
-	newStr := str
-	newStr = strings.ReplaceAll(newStr, "\n", "")
-	newStr = strings.ReplaceAll(newStr, "\r", "")
-	return newStr
 }

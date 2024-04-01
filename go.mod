@@ -7,6 +7,7 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/irlndts/go-discogs v0.3.6 // direct
 	golang.org/x/sys v0.18.0 // indirect
 )
 
