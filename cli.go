@@ -20,7 +20,7 @@ func main() {
 		fmt.Println("db.cfg not found in local directory.")
 		return
 	}
-	_, err = sql.Open("mysql", string(body))
+	db, err := sql.Open("mysql", string(body))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -33,28 +33,48 @@ func main() {
 		return
 	}
 
-	fmt.Println(usr)
-	fmt.Printf("0x%x\n", pass)
+	rows, err := db.Query("SELECT password FROM users WHERE username = ?", usr)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer rows.Close()
 
+	var pswd string
+
+	for rows.Next() {
+		if err := rows.Scan(&pswd); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+
+	if(pswd != pass){
+		fmt.Println("Incorrect username or password.")
+		return
+	}
+
+	fmt.Printf("Welcome, %s.\n", usr)
 }
 
 // login loop, prompt uname and pass
-func login() (string, [16]byte, error) {
+func login() (string, string, error) {
 	var err error
 	var uname string
-	var password [16]byte
+	var password string
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Enter your username\n>")
 	uname, err = reader.ReadString('\n')
 	if err != nil {
 		return "", password, err
 	}
+
 	fmt.Print("Enter your password\n>")
 	bword, err := term.ReadPassword(int(syscall.Stdin))
 	if err != nil {
 		return "", password, err
 	}
-	password = md5.Sum(bword)
+	password = fmt.Sprintf("%x", md5.Sum(bword))
 	fmt.Println()
 	return stripFormatting(uname), password, nil
 }
