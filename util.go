@@ -15,7 +15,7 @@ func stripFormatting(str string) string {
 
 // read and split a cfg file
 func readConfig(path string) ([]string, error) {
-	body, err := os.ReadFile("./db.cfg")
+	body, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

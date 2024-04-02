@@ -6,9 +6,14 @@ import (
 
 var CLIENT discogs.Discogs
 
-func init_api(){
-	CLIENT, err := discogs.New(&discogs.Options{
-        UserAgent: "Some Name",
-        Token:     "Some Token",
-    })
+func init_api() error {
+	cfg, err := readConfig("discogs.cfg")
+	if err != nil {
+		return err
+	}
+	CLIENT, err = discogs.New(&discogs.Options{
+		UserAgent: getVar("AGENT", cfg),
+		Token:     getVar("TOKEN", cfg),
+	})
+	return err
 }

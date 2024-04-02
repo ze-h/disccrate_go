@@ -14,6 +14,10 @@ import (
 )
 
 func main() {
+	if init_api() != nil {
+		fmt.Println("Discogs init failed!")
+		return
+	}
 	db_cfg, err := readConfig("db.cfg")
 	if err != nil {
 		fmt.Println(err)
@@ -55,6 +59,63 @@ func main() {
 	}
 
 	fmt.Printf("Welcome, %s.\n", usr)
+	reader := bufio.NewReader(os.Stdin)
+	for usermode(usr, reader, db) {
+	}
+	fmt.Println("Goodbye!")
+}
+
+// usermode loop
+func usermode(username string, reader *bufio.Reader, db *sql.DB) bool {
+	fmt.Print("Select an option:\n1 - Add record to collection\n2 - Query collection\n3 - Remove from collection\n>")
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	switch stripFormatting(input) {
+	case "1":
+		album, err := promptAlbum(reader)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+		db.Query("INSERT INTO records (title, artist, medium, format, label, genre, year, upc, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", album[0], album[1], album[2], album[3], album[4], album[5], album[6], album[7], username)
+		return true
+	case "2":
+		rows, err := db.Query("SELECT * FROM records WHERE username=?", username)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+		defer rows.Close()
+		fmt.Println("title\tartist\t\tmedium\tformat\tlabel\tgenre\tyear\tupc")
+		for rows.Next() {
+			var a, b, c, d, e, f, g, h, i string
+			if err := rows.Scan(&a, &b, &c, &d, &e, &f, &g, &h, &i); err != nil {
+				fmt.Println(err)
+				return false
+			}
+			fmt.Printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", a, b, c, d, e, f, g, h)
+		}
+		fmt.Println()
+		return true
+	}
+	return true
+}
+
+func promptAlbum(reader *bufio.Reader) ([8]string, error) {
+	fields := [8]string{"title", "artist", "medium", "format", "label", "genre", "year", "UPC"}
+	var out [8]string
+	for i, v := range fields {
+		fmt.Printf("Enter the %s\n>", v)
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			return fields, err
+		}
+		out[i] = stripFormatting(input)
+	}
+	return out, nil
 }
 
 // prompt uname and pass
