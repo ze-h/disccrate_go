@@ -12,10 +12,6 @@ import (
 
 //runner for cli admin settings
 func admin() {
-	if initApi() != nil {
-		fmt.Println("Discogs init failed!")
-		os.Exit(1)
-	}
 	db_cfg, err := readConfig("db.cfg")
 	if err != nil {
 		fmt.Println(err)
@@ -39,7 +35,7 @@ func admin() {
 
 // adminmode loop
 func adminMode(reader *bufio.Reader, db *sql.DB) bool {
-	fmt.Print("Select an option:\n1 - Add user to database\n2 - Query users\n3 - Remove user from collection\n0 - Exit\n>")
+	fmt.Print("Select an option:\n1 - Add user to database\n2 - Query users\n3 - Remove user from database\n0 - Exit\n>")
 	input, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println(err)
@@ -93,12 +89,12 @@ func adminMode(reader *bufio.Reader, db *sql.DB) bool {
 			os.Exit(1)
 		}
 		uname = stripFormatting(uname)
-		_, err = db.Query("DELETE FROM users WHERE username = ?", uname)
+		_, err = db.Query("DELETE FROM records WHERE username = ?", uname)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		_, err = db.Query("DELETE FROM records WHERE username = ?", uname)
+		_, err = db.Query("DELETE FROM users WHERE username = ?", uname)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
