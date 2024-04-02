@@ -75,10 +75,25 @@ func usermode(username string, reader *bufio.Reader, db *sql.DB) bool {
 	}
 	switch stripFormatting(input) {
 	case "1":
-		album, err := promptAlbum(reader)
+		fmt.Print("Enter 1 for manual, 2 for automatic\n>")
+		input_2, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println(err)
 			return false
+		}
+		var album [8]string
+		if stripFormatting(input_2) == "1" {
+			album, err = promptAlbum(reader)
+			if err != nil {
+				fmt.Println(err)
+				return false
+			}
+		} else {
+			album, err = promptUPC(reader)
+			if err != nil {
+				fmt.Println(err)
+				return false
+			}
 		}
 		_, err = db.Query("INSERT INTO records (title, artist, medium, format, label, genre, year, upc, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", album[0], album[1], album[2], album[3], album[4], album[5], album[6], album[7], username)
 		if err != nil {
@@ -108,6 +123,7 @@ func usermode(username string, reader *bufio.Reader, db *sql.DB) bool {
 	return true
 }
 
+// prompt each part of the album manually
 func promptAlbum(reader *bufio.Reader) ([8]string, error) {
 	fields := [8]string{"title", "artist", "medium", "format", "label", "genre", "year", "UPC"}
 	var out [8]string
@@ -120,6 +136,17 @@ func promptAlbum(reader *bufio.Reader) ([8]string, error) {
 		out[i] = stripFormatting(input)
 	}
 	return out, nil
+}
+
+// prompt each part of the album using only the UPC
+func promptUPC(reader *bufio.Reader) ([8]string, error) {
+	var out [8]string
+	fmt.Print("Enter the UPC\n>")
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		return out, err
+	}
+	return getAlbumInfo(input)
 }
 
 // prompt uname and pass
