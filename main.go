@@ -9,10 +9,20 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+var ADMIN_CONFIG, DB_CONFIG, DISCOGS_CONFIG string
+
 func main() {
+	master_conf, err := readConfig("config.cfg")
+	if err != nil {
+		fmt.Println("Master config read error, is it in your current directory?")
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	ADMIN_CONFIG, DB_CONFIG, DISCOGS_CONFIG = getVar("ADMIN", master_conf), getVar("DB", master_conf), getVar("DISCOGS", master_conf)
+
 	if len(os.Args) == 3 {
 		if os.Args[1] == "admin" {
-			admin_cfg, err := readConfig("admin.cfg")
+			admin_cfg, err := readConfig(ADMIN_CONFIG)
 			if err != nil {
 				fmt.Println("Admin config read error")
 				fmt.Println(err)
@@ -31,7 +41,7 @@ func main() {
 		fmt.Println("Discogs init failed!")
 		os.Exit(1)
 	}
-	db_cfg, err := readConfig("db.cfg")
+	db_cfg, err := readConfig(DB_CONFIG)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

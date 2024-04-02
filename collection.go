@@ -10,7 +10,7 @@ var CLIENT discogs.Discogs
 
 // initialize the discogs api using the info stored in discogs.cfg
 func initApi() error {
-	cfg, err := readConfig("discogs.cfg")
+	cfg, err := readConfig(DISCOGS_CONFIG)
 	if err != nil {
 		return err
 	}

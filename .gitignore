@@ -1,3 +1,5 @@
 disccratego
 *.exe
 *.cfg
+!config.cfg
+.vscode

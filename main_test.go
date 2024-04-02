@@ -10,14 +10,18 @@ import (
 )
 
 func TestSQLConnection(t *testing.T) {
-	body, err := os.ReadFile("./db.cfg")
+	DB_CONFIG = "db.cfg"
+
+	db_cfg, err := readConfig(DB_CONFIG)
 	if err != nil {
-		fmt.Println("db.cfg not found in local directory.")
-		t.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
-	db, err := sql.Open("mysql", string(body))
+
+	db, err := sql.Open("mysql", getVar("DSN", db_cfg))
 	if err != nil {
-		t.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	rows, err := db.Query("SELECT username FROM users")
 	if err != nil {

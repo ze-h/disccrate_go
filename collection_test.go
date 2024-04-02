@@ -8,6 +8,7 @@ import (
 )
 
 func TestDiscogsSearch(t *testing.T) {
+	DISCOGS_CONFIG = "discogs.cfg"
 	err := initApi()
 	if err != nil {
 		t.Fatal(err)
@@ -23,6 +24,7 @@ func TestDiscogsSearch(t *testing.T) {
 }
 
 func TestLongInput(t *testing.T) {
+	DISCOGS_CONFIG = "discogs.cfg"
 	err := initApi()
 	if err != nil {
 		t.Fatal(err)

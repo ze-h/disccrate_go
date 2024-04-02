@@ -12,7 +12,7 @@ import (
 
 //runner for cli admin settings
 func admin() {
-	db_cfg, err := readConfig("db.cfg")
+	db_cfg, err := readConfig(DB_CONFIG)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
