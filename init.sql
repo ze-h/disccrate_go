@@ -12,9 +12,9 @@ CREATE TABLE records (
     label VARCHAR(64),
     genre VARCHAR(32),
     year YEAR,
-    upc INT(64),
+    upc VARCHAR(64),
     username CHAR(16),
-    PRIMARY KEY (title, artist, medium, upc),
+    PRIMARY KEY upc,
     FOREIGN KEY (username) REFERENCES users(username)
 );
 

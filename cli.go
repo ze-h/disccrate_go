@@ -80,7 +80,11 @@ func usermode(username string, reader *bufio.Reader, db *sql.DB) bool {
 			fmt.Println(err)
 			return false
 		}
-		db.Query("INSERT INTO records (title, artist, medium, format, label, genre, year, upc, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", album[0], album[1], album[2], album[3], album[4], album[5], album[6], album[7], username)
+		_, err = db.Query("INSERT INTO records (title, artist, medium, format, label, genre, year, upc, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", album[0], album[1], album[2], album[3], album[4], album[5], album[6], album[7], username)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
 		return true
 	case "2":
 		rows, err := db.Query("SELECT * FROM records WHERE username=?", username)
