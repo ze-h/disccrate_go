@@ -9,7 +9,7 @@ import (
 var CLIENT discogs.Discogs
 
 // initialize the discogs api using the info stored in discogs.cfg
-func init_api() error {
+func initApi() error {
 	cfg, err := readConfig("discogs.cfg")
 	if err != nil {
 		return err
