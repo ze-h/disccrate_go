@@ -95,12 +95,12 @@ func usermode(username string, reader *bufio.Reader, db *sql.DB) bool {
 		defer rows.Close()
 		fmt.Println("title\tartist\t\tmedium\tformat\tlabel\tgenre\tyear\tupc")
 		for rows.Next() {
-			var a, b, c, d, e, f, g, h, i string
-			if err := rows.Scan(&a, &b, &c, &d, &e, &f, &g, &h, &i); err != nil {
+			var title, artist, medium, format, label, genre, year, upc, record_user string
+			if err := rows.Scan(&title, &artist, &medium, &format, &label, &genre, &year, &upc, &record_user); err != nil {
 				fmt.Println(err)
 				return false
 			}
-			fmt.Printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", a, b, c, d, e, f, g, h)
+			fmt.Printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", title, artist, medium, format, label, genre, year, upc)
 		}
 		fmt.Println()
 		return true
