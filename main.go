@@ -42,18 +42,14 @@ func main() {
 		os.Exit(1)
 	}
 	db_cfg, err := readConfig(DB_CONFIG)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	iferr(err)
 
 	db, err := sql.Open("mysql", getVar("DSN", db_cfg))
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	iferr(err)
 	if len(os.Args) == 1 {
 		cli(db)
+	}else if os.Args[1] == "gui"{
+		gui(db)
 	} else {
 		fmt.Print("Invalid argument(s): ")
 		for _, v := range os.Args {

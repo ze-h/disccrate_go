@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strings"
 )
@@ -31,4 +32,12 @@ func getVar(var_ string, cfg []string) string {
 		}
 	}
 	return ""
+}
+
+// iferr -> os.exit(1) + print
+func iferr(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }

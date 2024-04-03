@@ -10,19 +10,13 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-//runner for cli admin settings
+// runner for cli admin settings
 func admin() {
 	db_cfg, err := readConfig(DB_CONFIG)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	iferr(err)
 
 	db, err := sql.Open("mysql", getVar("DSN", db_cfg))
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	iferr(err)
 
 	reader := bufio.NewReader(os.Stdin)
 
@@ -37,38 +31,23 @@ func admin() {
 func adminMode(reader *bufio.Reader, db *sql.DB) bool {
 	fmt.Print("Select an option:\n1 - Add user to database\n2 - Query users\n3 - Remove user from database\n0 - Exit\n>")
 	input, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	iferr(err)
 	switch stripFormatting(input) {
 	case "1":
 		fmt.Print("Enter the new user's name\n>")
 		uname, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		iferr(err)
 		uname = stripFormatting(uname)
 		fmt.Print("Enter the new user's password\n>")
 		pass, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		iferr(err)
 		pass = stripFormatting(pass)
 		_, err = db.Query("INSERT INTO users (username, password) VALUES (?, ?)", uname, fmt.Sprintf("%x", md5.Sum([]byte(pass))))
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		iferr(err)
 		return true
 	case "2":
 		rows, err := db.Query("SELECT * FROM users")
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		iferr(err)
 		defer rows.Close()
 		fmt.Println("user\tpassword hash")
 		for rows.Next() {
@@ -84,21 +63,12 @@ func adminMode(reader *bufio.Reader, db *sql.DB) bool {
 	case "3":
 		fmt.Print("Enter the user's name\n>")
 		uname, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		iferr(err)
 		uname = stripFormatting(uname)
 		_, err = db.Query("DELETE FROM records WHERE username = ?", uname)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		iferr(err)
 		_, err = db.Query("DELETE FROM users WHERE username = ?", uname)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		iferr(err)
 		fmt.Printf("User %s deleted successfully.\n", uname)
 		return true
 	case "0":

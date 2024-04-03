@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 	"syscall"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -22,25 +23,15 @@ func cli(db *sql.DB) {
 		os.Exit(1)
 	}
 
-	rows, err := db.Query("SELECT password FROM users WHERE username = ?", usr)
+	check, err := verify(db, usr, pass)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("%s\n", err)
 		os.Exit(1)
 	}
-	defer rows.Close()
 
-	var pswd string
-
-	for rows.Next() {
-		if err := rows.Scan(&pswd); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	}
-
-	if pswd != pass {
-		fmt.Println("Incorrect username or password.")
-		os.Exit(1)
+	if !check {
+		fmt.Printf("Incorrect username or password\n")
+		return
 	}
 
 	fmt.Printf("Welcome, %s.\n", usr)
@@ -53,10 +44,7 @@ func cli(db *sql.DB) {
 func usermode(username string, reader *bufio.Reader, db *sql.DB) bool {
 	fmt.Print("Select an option:\n1 - Add record to collection\n2 - Query collection\n3 - Remove from collection\n0 - Exit\n>")
 	input, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	iferr(err)
 	switch stripFormatting(input) {
 	case "1":
 		fmt.Print("Enter 1 for manual, 2 for automatic\n>")
@@ -79,14 +67,14 @@ func usermode(username string, reader *bufio.Reader, db *sql.DB) bool {
 				os.Exit(1)
 			}
 		}
-		_, err = db.Query("INSERT INTO records (title, artist, medium, format, label, genre, year, upc, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", album[0], album[1], album[2], album[3], album[4], album[5], album[6], album[7], username)
+		_, err = addRecord(db, album, username)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 		return true
 	case "2":
-		rows, err := db.Query("SELECT * FROM records WHERE username=?", username)
+		rows, err := getRecords(db, username)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -102,6 +90,45 @@ func usermode(username string, reader *bufio.Reader, db *sql.DB) bool {
 			fmt.Printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", title, artist, medium, format, label, genre, year, upc)
 		}
 		fmt.Println()
+		return true
+	case "3":
+		fmt.Print("Enter the UPC to remove\n>")
+		upc, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		upc = stripFormatting(upc)
+
+		title, err := findRecord(db, upc, username)
+
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		if title == "" {
+			fmt.Printf("No record with UPC %s found.\n", upc)
+			return true
+		}
+
+		fmt.Printf("Are you sure you want to remove %s from your collection? (y/N)\n>", title)
+		confirm, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		confirm = strings.ToUpper(stripFormatting(confirm))
+
+		if confirm == "Y" {
+			_, err = deleteRecord(db, upc, username)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			fmt.Printf("Record with UPC %s deleted successfully.\n", upc)
+		}
 		return true
 	case "0":
 		return false
