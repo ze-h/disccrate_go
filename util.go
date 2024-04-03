@@ -41,3 +41,30 @@ func iferr(err error) {
 		os.Exit(1)
 	}
 }
+
+// write string to file with name fn
+func writeToFile(fn string, out string) error {
+	f, err := os.Create(fn)
+	if err != nil {
+		return err
+	}
+	_, err = f.WriteString(out)
+	f.Close()
+	return err
+}
+
+// take a 2d array of records and convert it to a csv string
+func recordsToCSVString(arr [][]string) string {
+	out := ""
+	out += fmt.Sprintln("title,artist,medium,format,label,genre,year,upc,")
+	for i := range arr {
+		arr[i][8] = ""
+	}
+	for _, row := range arr {
+		for i := 0; i < 8; i++ {
+			out += fmt.Sprintf("%s,", row[i])
+		}
+		out += fmt.Sprintln()
+	}
+	return out
+}

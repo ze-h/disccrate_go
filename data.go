@@ -55,3 +55,17 @@ func findRecord(db *sql.DB, upc string, username string) (string, error) {
 
 	return title, nil
 }
+
+func recordRowsToArray(rows *sql.Rows) ([][]string, error) {
+	var out [][]string
+	crow := 0
+	for rows.Next() {
+		r := []string{"", "", "", "", "", "", "", "", ""}
+		if err := rows.Scan(&r[0], &r[1], &r[2], &r[3], &r[4], &r[5], &r[6], &r[7], &r[8]); err != nil {
+			return out, err
+		}
+		out = append(out, r)
+		crow++
+	}
+	return out, nil
+}

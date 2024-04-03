@@ -42,7 +42,7 @@ func cli(db *sql.DB) {
 
 // usermode loop
 func usermode(username string, reader *bufio.Reader, db *sql.DB) bool {
-	fmt.Print("Select an option:\n1 - Add record to collection\n2 - Query collection\n3 - Remove from collection\n0 - Exit\n>")
+	fmt.Print("Select an option:\n1 - Add record to collection\n2 - Remove from collection\n3 - Query collection\n4 - Export collection\n0 - Exit\n>")
 	input, err := reader.ReadString('\n')
 	iferr(err)
 	switch stripFormatting(input) {
@@ -74,38 +74,14 @@ func usermode(username string, reader *bufio.Reader, db *sql.DB) bool {
 		}
 		return true
 	case "2":
-		rows, err := getRecords(db, username)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		defer rows.Close()
-		fmt.Println("title\tartist\t\tmedium\tformat\tlabel\tgenre\tyear\tupc")
-		for rows.Next() {
-			var title, artist, medium, format, label, genre, year, upc, record_user string
-			if err := rows.Scan(&title, &artist, &medium, &format, &label, &genre, &year, &upc, &record_user); err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			fmt.Printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", title, artist, medium, format, label, genre, year, upc)
-		}
-		fmt.Println()
-		return true
-	case "3":
 		fmt.Print("Enter the UPC to remove\n>")
 		upc, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		iferr(err)
 		upc = stripFormatting(upc)
 
 		title, err := findRecord(db, upc, username)
 
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		iferr(err)
 
 		if title == "" {
 			fmt.Printf("No record with UPC %s found.\n", upc)
@@ -114,21 +90,49 @@ func usermode(username string, reader *bufio.Reader, db *sql.DB) bool {
 
 		fmt.Printf("Are you sure you want to remove %s from your collection? (y/N)\n>", title)
 		confirm, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		iferr(err)
 
 		confirm = strings.ToUpper(stripFormatting(confirm))
 
 		if confirm == "Y" {
 			_, err = deleteRecord(db, upc, username)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+			iferr(err)
 			fmt.Printf("Record with UPC %s deleted successfully.\n", upc)
 		}
+		return true
+	case "3":
+		rows, err := getRecords(db, username)
+		iferr(err)
+		defer rows.Close()
+		fmt.Println("title\tartist\tmedium\tformat\tlabel\tgenre\tyear\tupc")
+		arr, err := recordRowsToArray(rows)
+		iferr(err)
+		for i := range arr {
+			arr[i][8] = ""
+		}
+		for _, row := range arr {
+			for _, s := range row {
+				fmt.Printf("%s\t", s)
+			}
+			fmt.Println()
+		}
+		return true
+	case "4":
+		fmt.Print("Enter the CSV filename to export to\n>")
+		fn, err := reader.ReadString('\n')
+		iferr(err)
+
+		fn = stripFormatting(fn)
+		rows, err := getRecords(db, username)
+		iferr(err)
+
+		defer rows.Close()
+		arr, err := recordRowsToArray(rows)
+		iferr(err)
+
+		err = writeToFile(fn, recordsToCSVString(arr))
+		iferr(err)
+
 		return true
 	case "0":
 		return false
@@ -159,7 +163,7 @@ func promptUPC(reader *bufio.Reader) ([8]string, error) {
 	if err != nil {
 		return out, err
 	}
-	return getAlbumInfo(input)
+	return getAlbumInfo(stripFormatting(input))
 }
 
 // prompt uname and pass
