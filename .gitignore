@@ -2,5 +2,7 @@ disccratego
 *.exe
 *.cfg
 !config.cfg
+!test.cfg
+!*.sample.cfg
 .vscode
 *.csv

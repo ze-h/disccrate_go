@@ -9,7 +9,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// runner for the program's command line interface
+// runner for the program's continuous kiosk interface
 func kiosk(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 	usr, pass, err := login(reader)
@@ -36,7 +36,7 @@ func kiosk(db *sql.DB) {
 	fmt.Println("Goodbye!")
 }
 
-// usermode loop
+// kiosk scanner loop
 func kisok_loop(username string, reader *bufio.Reader, db *sql.DB) bool {
 	var album [8]string
 	album, err := promptUPC(reader)
