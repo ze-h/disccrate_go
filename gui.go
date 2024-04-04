@@ -25,6 +25,7 @@ func gui(db *sql.DB) {
 	auto_record_popup_pass := tview.NewModal()
 	incorrect_login := tview.NewModal()
 	add_record_auto := tview.NewForm()
+	add_record := tview.NewForm()
 	collection_table := tview.NewTable()
 
 	incorrect_login.
@@ -80,7 +81,9 @@ func gui(db *sql.DB) {
 		SetTitleAlign(tview.AlignCenter)
 
 	home_screen.
-		AddItem("Add Record", "Manually add record to collection", 'a', nil).
+		AddItem("Add Record", "Manually add record to collection", 'a', func() {
+			app.SetRoot(add_record, true)
+		}).
 		AddItem("Add Record (Automatic)", "Add record to collection using UPC", 'b', func() {
 			app.SetRoot(add_record_auto, true)
 		}).
@@ -140,9 +143,51 @@ func gui(db *sql.DB) {
 		SetTitle("DiscCrate: Add Record (Auto)").
 		SetTitleAlign(tview.AlignCenter)
 
+	add_record.
+		AddInputField("Title", "", 64, nil, func(str string) {
+			album_tmp[0] = str
+		}).
+		AddInputField("Artist", "", 48, nil, func(str string) {
+			album_tmp[1] = str
+		}).
+		AddInputField("Year", "", 8, nil, func(str string) {
+			album_tmp[6] = str
+		}).
+		AddInputField("Genre", "", 16, nil, func(str string) {
+			album_tmp[5] = str
+		}).
+		AddInputField("Medium", "", 16, nil, func(str string) {
+			album_tmp[2] = str
+		}).
+		AddInputField("Format", "", 16, nil, func(str string) {
+			album_tmp[3] = str
+		}).
+		AddInputField("Label", "", 32, nil, func(str string) {
+			album_tmp[4] = str
+		}).
+		AddInputField("UPC", "", 32, nil, func(str string) {
+			album_tmp[7] = str
+		}).
+		AddButton("Submit", func() {
+			album = album_tmp
+			_, err := addRecord(db, album, usr)
+			if err != nil {
+				app.SetRoot(auto_record_popup, false)
+				log.Println(err)
+			} else {
+				app.SetRoot(auto_record_popup_pass, false)
+			}
+		}).
+		AddButton("Quit", func() {
+			app.SetRoot(home_screen, true)
+		}).
+		SetBorder(true).
+		SetTitle("DiscCrate: Add Record").
+		SetTitleAlign(tview.AlignCenter)
+
 	collection_table.
 		SetBorder(true).
-		SetTitle("DiscCrate: Collection View").
+		SetTitle("DiscCrate: Collection View (Press q to return)").
 		SetTitleAlign(tview.AlignCenter)
 
 	// run application window

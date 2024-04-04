@@ -48,8 +48,10 @@ func main() {
 	iferr(err)
 	if len(os.Args) == 1 {
 		cli(db)
-	}else if os.Args[1] == "gui"{
+	} else if os.Args[1] == "gui" {
 		gui(db)
+	} else if os.Args[1] == "kiosk" {
+		kiosk(db)
 	} else {
 		fmt.Print("Invalid argument(s): ")
 		for _, v := range os.Args {
