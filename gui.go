@@ -26,6 +26,7 @@ func gui(db *sql.DB) {
 	incorrect_login := tview.NewModal()
 	add_record_auto := tview.NewForm()
 	add_record := tview.NewForm()
+	remove_record := tview.NewForm()
 	collection_table := tview.NewTable()
 
 	incorrect_login.
@@ -87,7 +88,9 @@ func gui(db *sql.DB) {
 		AddItem("Add Record (Automatic)", "Add record to collection using UPC", 'b', func() {
 			app.SetRoot(add_record_auto, true)
 		}).
-		AddItem("Remove Record", "Remoce record from collection using UPC", 'c', nil).
+		AddItem("Remove Record", "Remoce record from collection using UPC", 'c', func() {
+			app.SetRoot(remove_record, true)
+		}).
 		AddItem("See Collection", "Display record collection", 'd', func() {
 			app.SetRoot(collection_table, true)
 			records, err := getRecords(db, usr)
@@ -183,6 +186,27 @@ func gui(db *sql.DB) {
 		}).
 		SetBorder(true).
 		SetTitle("DiscCrate: Add Record").
+		SetTitleAlign(tview.AlignCenter)
+
+	remove_record.
+		AddInputField("UPC", "", 32, nil, func(str string) {
+			album_tmp[7] = str
+		}).
+		AddButton("Submit", func() {
+			album = album_tmp
+			_, err := deleteRecord(db, album[7], usr)
+			if err != nil {
+				app.SetRoot(auto_record_popup, false)
+				log.Println(err)
+			} else {
+				app.SetRoot(auto_record_popup_pass, false)
+			}
+		}).
+		AddButton("Quit", func() {
+			app.SetRoot(home_screen, true)
+		}).
+		SetBorder(true).
+		SetTitle("DiscCrate: Remove Record").
 		SetTitleAlign(tview.AlignCenter)
 
 	collection_table.
