@@ -3,3 +3,4 @@ disccratego
 *.cfg
 !config.cfg
 .vscode
+*.csv
