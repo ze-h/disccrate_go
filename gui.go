@@ -23,6 +23,10 @@ func gui(db *sql.DB) {
 	home_screen := tview.NewList()
 	auto_record_popup := tview.NewModal()
 	auto_record_popup_pass := tview.NewModal()
+	add_record_popup := tview.NewModal()
+	add_record_popup_pass := tview.NewModal()
+	rem_record_popup := tview.NewModal()
+	rem_record_popup_pass := tview.NewModal()
 	incorrect_login := tview.NewModal()
 	add_record_auto := tview.NewForm()
 	add_record := tview.NewForm()
@@ -46,12 +50,49 @@ func gui(db *sql.DB) {
 				app.SetRoot(add_record_auto, true)
 			}
 		})
+
 	auto_record_popup_pass.
 		SetText("Record added successfully!").
 		AddButtons([]string{"OK"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			if buttonLabel == "OK" {
 				app.SetRoot(add_record_auto, true)
+			}
+		})
+
+	add_record_popup.
+		SetText("Adding record failed! See log for details.").
+		AddButtons([]string{"OK"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			if buttonLabel == "OK" {
+				app.SetRoot(add_record, true)
+			}
+		})
+
+	add_record_popup_pass.
+		SetText("Record added successfully!").
+		AddButtons([]string{"OK"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			if buttonLabel == "OK" {
+				app.SetRoot(add_record, true)
+			}
+		})
+
+	rem_record_popup.
+		SetText("Removing record failed! See log for details.").
+		AddButtons([]string{"OK"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			if buttonLabel == "OK" {
+				app.SetRoot(remove_record, true)
+			}
+		})
+
+	rem_record_popup_pass.
+		SetText("Record removed successfully!").
+		AddButtons([]string{"OK"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			if buttonLabel == "OK" {
+				app.SetRoot(remove_record, true)
 			}
 		})
 
@@ -175,10 +216,10 @@ func gui(db *sql.DB) {
 			album = album_tmp
 			_, err := addRecord(db, album, usr)
 			if err != nil {
-				app.SetRoot(auto_record_popup, false)
+				app.SetRoot(add_record_popup, false)
 				log.Println(err)
 			} else {
-				app.SetRoot(auto_record_popup_pass, false)
+				app.SetRoot(add_record_popup_pass, false)
 			}
 		}).
 		AddButton("Quit", func() {
@@ -196,10 +237,10 @@ func gui(db *sql.DB) {
 			album = album_tmp
 			_, err := deleteRecord(db, album[7], usr)
 			if err != nil {
-				app.SetRoot(auto_record_popup, false)
+				app.SetRoot(rem_record_popup, false)
 				log.Println(err)
 			} else {
-				app.SetRoot(auto_record_popup_pass, false)
+				app.SetRoot(rem_record_popup_pass, false)
 			}
 		}).
 		AddButton("Quit", func() {
@@ -210,6 +251,7 @@ func gui(db *sql.DB) {
 		SetTitleAlign(tview.AlignCenter)
 
 	collection_table.
+		SetSelectable(true, false).
 		SetBorder(true).
 		SetTitle("DiscCrate: Collection View (Press q to return)").
 		SetTitleAlign(tview.AlignCenter)
