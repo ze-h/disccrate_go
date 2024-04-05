@@ -6,3 +6,4 @@ disccratego
 !*.sample.cfg
 .vscode
 *.csv
+*.log

@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"database/sql"
 	"fmt"
-	"log"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -107,6 +107,7 @@ func gui(db *sql.DB) {
 			usr = usr_temp
 			v, err := verify(db, usr, fmt.Sprintf("%x", md5.Sum([]byte(pass))))
 			if err != nil {
+				writeToFile("dc.log", time.Now().String() + " - " + err.Error())
 				panic(err)
 			}
 			if v {
@@ -169,12 +170,12 @@ func gui(db *sql.DB) {
 			album, err := getAlbumInfo(album[7])
 			if err != nil {
 				app.SetRoot(auto_record_popup, false)
-				log.Println(err)
+				writeToFile("dc.log", time.Now().String() + " - " + err.Error())
 			} else {
 				_, err = addRecord(db, album, usr)
 				if err != nil {
 					app.SetRoot(auto_record_popup, false)
-					log.Println(err)
+					writeToFile("dc.log", time.Now().String() + " - " + err.Error())
 				} else {
 					app.SetRoot(auto_record_popup_pass, false)
 				}
@@ -217,7 +218,7 @@ func gui(db *sql.DB) {
 			_, err := addRecord(db, album, usr)
 			if err != nil {
 				app.SetRoot(add_record_popup, false)
-				log.Println(err)
+				writeToFile("dc.log", time.Now().String() + " - " + err.Error())
 			} else {
 				app.SetRoot(add_record_popup_pass, false)
 			}
@@ -238,7 +239,7 @@ func gui(db *sql.DB) {
 			_, err := deleteRecord(db, album[7], usr)
 			if err != nil {
 				app.SetRoot(rem_record_popup, false)
-				log.Println(err)
+				writeToFile("dc.log", time.Now().String() + " - " + err.Error())
 			} else {
 				app.SetRoot(rem_record_popup_pass, false)
 			}
@@ -258,6 +259,7 @@ func gui(db *sql.DB) {
 
 	// run application window
 	if err := app.SetRoot(login_form, true).EnableMouse(true).Run(); err != nil {
+		writeToFile("dc.log", time.Now().String() + " - " + err.Error())
 		panic(err)
 	}
 }
