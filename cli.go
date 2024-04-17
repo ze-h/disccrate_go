@@ -31,6 +31,7 @@ func cli(db *sql.DB) {
 
 	if !check {
 		fmt.Printf("Incorrect username or password\n")
+		fmt.Printf("Password: %s\n", pass)
 		return
 	}
 
@@ -182,7 +183,7 @@ func login(reader *bufio.Reader) (string, string, error) {
 	if err != nil {
 		return "", password, err
 	}
-	password = fmt.Sprintf("%x", sha256.New().Sum([]byte(bword)))
+	password = fmt.Sprintf("%x", sha256.Sum256([]byte(bword)))
 	fmt.Println()
 	return stripFormatting(uname), password, nil
 }

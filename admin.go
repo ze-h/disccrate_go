@@ -42,7 +42,7 @@ func adminMode(reader *bufio.Reader, db *sql.DB) bool {
 		pass, err := reader.ReadString('\n')
 		iferr(err)
 		pass = stripFormatting(pass)
-		_, err = db.Query("INSERT INTO users (username, password) VALUES (?, ?)", uname, fmt.Sprintf("%x", sha256.New().Sum([]byte(pass))))
+		_, err = db.Query("INSERT INTO users (username, password) VALUES (?, ?)", uname, fmt.Sprintf("%x", sha256.Sum256([]byte(pass))))
 		iferr(err)
 		return true
 	case "2":

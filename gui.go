@@ -108,7 +108,7 @@ func gui(db *sql.DB) {
 		}).
 		AddButton("Submit", func() {
 			usr = usr_temp
-			v, err := verify(db, usr, fmt.Sprintf("%x", sha256.New().Sum([]byte(pass))))
+			v, err := verify(db, usr, fmt.Sprintf("%x", sha256.Sum256([]byte(pass))))
 			if err != nil {
 				writeToFile("dc.log", time.Now().String()+" - "+err.Error())
 				panic(err)

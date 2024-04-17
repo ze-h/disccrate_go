@@ -28,7 +28,7 @@ func main() {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			sum := fmt.Sprintf("%x", sha256.New().Sum([]byte(os.Args[2])))
+			sum := fmt.Sprintf("%x", sha256.Sum256([]byte(os.Args[2])))
 			if sum == getVar("KEY", admin_cfg) {
 				admin()
 			} else {
