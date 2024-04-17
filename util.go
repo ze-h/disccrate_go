@@ -68,3 +68,8 @@ func recordsToCSVString(arr [][]string) string {
 	}
 	return out
 }
+
+// remove all potential vulnerabilities from requests
+func stripInjection(string) string {
+	return ""
+}
