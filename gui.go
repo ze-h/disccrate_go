@@ -14,7 +14,7 @@ import (
 
 // run the gui userloop
 func gui(db *sql.DB) {
-	var usr_temp, usr, pass string
+	var usr_temp, fn_temp, fn, usr, pass string
 	var collection [][]string
 	var album, album_tmp [8]string
 
@@ -32,6 +32,9 @@ func gui(db *sql.DB) {
 	add_record := tview.NewForm()
 	remove_record := tview.NewForm()
 	collection_table := tview.NewTable()
+	export_collection := tview.NewForm()
+	export_popup := tview.NewModal()
+	export_popup_pass := tview.NewModal()
 
 	incorrect_login.
 		SetText("Incorrect username or password.").
@@ -107,7 +110,7 @@ func gui(db *sql.DB) {
 			usr = usr_temp
 			v, err := verify(db, usr, fmt.Sprintf("%x", md5.Sum([]byte(pass))))
 			if err != nil {
-				writeToFile("dc.log", time.Now().String() + " - " + err.Error())
+				writeToFile("dc.log", time.Now().String()+" - "+err.Error())
 				panic(err)
 			}
 			if v {
@@ -130,7 +133,7 @@ func gui(db *sql.DB) {
 		AddItem("Add Record (Automatic)", "Add record to collection using UPC", 'b', func() {
 			app.SetRoot(add_record_auto, true)
 		}).
-		AddItem("Remove Record", "Remoce record from collection using UPC", 'c', func() {
+		AddItem("Remove Record", "Remove record from collection using UPC", 'c', func() {
 			app.SetRoot(remove_record, true)
 		}).
 		AddItem("See Collection", "Display record collection", 'd', func() {
@@ -154,7 +157,10 @@ func gui(db *sql.DB) {
 				return event
 			})
 		}).
-		AddItem("Exit", "", 'e', func() {
+		AddItem("Export Record Collection", "Export all records as CSV", 'e', func() {
+			app.SetRoot(export_collection, true)
+		}).
+		AddItem("Exit", "", 'x', func() {
 			app.Stop()
 		}).
 		SetBorder(true).
@@ -170,12 +176,12 @@ func gui(db *sql.DB) {
 			album, err := getAlbumInfo(album[7])
 			if err != nil {
 				app.SetRoot(auto_record_popup, false)
-				writeToFile("dc.log", time.Now().String() + " - " + err.Error())
+				writeToFile("dc.log", time.Now().String()+" - "+err.Error())
 			} else {
 				_, err = addRecord(db, album, usr)
 				if err != nil {
 					app.SetRoot(auto_record_popup, false)
-					writeToFile("dc.log", time.Now().String() + " - " + err.Error())
+					writeToFile("dc.log", time.Now().String()+" - "+err.Error())
 				} else {
 					app.SetRoot(auto_record_popup_pass, false)
 				}
@@ -218,7 +224,7 @@ func gui(db *sql.DB) {
 			_, err := addRecord(db, album, usr)
 			if err != nil {
 				app.SetRoot(add_record_popup, false)
-				writeToFile("dc.log", time.Now().String() + " - " + err.Error())
+				writeToFile("dc.log", time.Now().String()+" - "+err.Error())
 			} else {
 				app.SetRoot(add_record_popup_pass, false)
 			}
@@ -239,7 +245,7 @@ func gui(db *sql.DB) {
 			_, err := deleteRecord(db, album[7], usr)
 			if err != nil {
 				app.SetRoot(rem_record_popup, false)
-				writeToFile("dc.log", time.Now().String() + " - " + err.Error())
+				writeToFile("dc.log", time.Now().String()+" - "+err.Error())
 			} else {
 				app.SetRoot(rem_record_popup_pass, false)
 			}
@@ -257,9 +263,59 @@ func gui(db *sql.DB) {
 		SetTitle("DiscCrate: Collection View (Press q to return)").
 		SetTitleAlign(tview.AlignCenter)
 
+	export_collection.
+		AddInputField("Output file name (*.csv)", "", 32, nil, func(str string) {
+			fn_temp = str
+		}).
+		AddButton("Submit", func() {
+			fn = fn_temp + ".csv"
+			fn = stripFormatting(fn)
+			rows, err := getRecords(db, usr)
+			iferr(err)
+
+			defer rows.Close()
+			arr, err := recordRowsToArray(rows)
+			if err != nil {
+				app.SetRoot(export_popup, false)
+				writeToFile("dc.log", time.Now().String()+" - "+err.Error())
+			}
+
+			err = writeToFile(fn, recordsToCSVString(arr))
+			if err != nil {
+				app.SetRoot(export_popup, false)
+				writeToFile("dc.log", time.Now().String()+" - "+err.Error())
+			} else {
+				app.SetRoot(export_popup_pass, false)
+			}
+		}).
+		AddButton("Quit", func() {
+			app.SetRoot(home_screen, true)
+		}).
+		SetBorder(true).
+		SetTitle("DiscCrate: Export Collection").
+		SetTitleAlign(tview.AlignCenter)
+
+	export_popup_pass.
+		SetText("Collection exported successfully!").
+		AddButtons([]string{"OK"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			if buttonLabel == "OK" {
+				app.SetRoot(export_collection, true)
+			}
+		})
+
+	export_popup.
+		SetText("Exporting records failed! See log for details.").
+		AddButtons([]string{"OK"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			if buttonLabel == "OK" {
+				app.SetRoot(export_collection, true)
+			}
+		})
+
 	// run application window
 	if err := app.SetRoot(login_form, true).EnableMouse(true).Run(); err != nil {
-		writeToFile("dc.log", time.Now().String() + " - " + err.Error())
+		writeToFile("dc.log", time.Now().String()+" - "+err.Error())
 		panic(err)
 	}
 }
