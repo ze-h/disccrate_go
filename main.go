@@ -1,7 +1,7 @@
 package main
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"database/sql"
 	"fmt"
 	"os"
@@ -28,7 +28,7 @@ func main() {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			sum := fmt.Sprintf("%x", md5.Sum([]byte(os.Args[2])))
+			sum := fmt.Sprintf("%x", sha256.Sum256([]byte(os.Args[2])))
 			if sum == getVar("KEY", admin_cfg) {
 				admin()
 			} else {

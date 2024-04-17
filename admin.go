@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"crypto/md5"
+	"crypto/sha256"
 	"database/sql"
 	"fmt"
 	"os"
@@ -42,7 +42,7 @@ func adminMode(reader *bufio.Reader, db *sql.DB) bool {
 		pass, err := reader.ReadString('\n')
 		iferr(err)
 		pass = stripFormatting(pass)
-		_, err = db.Query("INSERT INTO users (username, password) VALUES (?, ?)", uname, fmt.Sprintf("%x", md5.Sum([]byte(pass))))
+		_, err = db.Query("INSERT INTO users (username, password) VALUES (?, ?)", uname, fmt.Sprintf("%x", sha256.Sum256([]byte(pass))))
 		iferr(err)
 		return true
 	case "2":
