@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"crypto/md5"
+	"crypto/sha256"
 	"database/sql"
 	"fmt"
 	"os"
@@ -182,7 +182,7 @@ func login(reader *bufio.Reader) (string, string, error) {
 	if err != nil {
 		return "", password, err
 	}
-	password = fmt.Sprintf("%x", md5.Sum(bword))
+	password = fmt.Sprintf("%x", sha256.New().Sum([]byte(bword)))
 	fmt.Println()
 	return stripFormatting(uname), password, nil
 }

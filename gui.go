@@ -1,7 +1,7 @@
 package main
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"database/sql"
 	"fmt"
 	"time"
@@ -108,7 +108,7 @@ func gui(db *sql.DB) {
 		}).
 		AddButton("Submit", func() {
 			usr = usr_temp
-			v, err := verify(db, usr, fmt.Sprintf("%x", md5.Sum([]byte(pass))))
+			v, err := verify(db, usr, fmt.Sprintf("%x", sha256.New().Sum([]byte(pass))))
 			if err != nil {
 				writeToFile("dc.log", time.Now().String()+" - "+err.Error())
 				panic(err)
