@@ -6,8 +6,10 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"syscall"
 
 	_ "github.com/go-sql-driver/mysql"
+	"golang.org/x/term"
 )
 
 // runner for cli admin settings
@@ -39,9 +41,8 @@ func adminMode(reader *bufio.Reader, db *sql.DB) bool {
 		iferr(err)
 		uname = stripFormatting(uname)
 		fmt.Print("Enter the new user's password\n>")
-		pass, err := reader.ReadString('\n')
+		pass, err := term.ReadPassword(int(syscall.Stdin))
 		iferr(err)
-		pass = stripFormatting(pass)
 		_, err = db.Query("INSERT INTO users (username, password) VALUES (?, ?)", uname, fmt.Sprintf("%x", sha256.Sum256([]byte(pass))))
 		iferr(err)
 		return true
