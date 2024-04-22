@@ -14,7 +14,7 @@ CREATE TABLE records (
     year YEAR,
     upc VARCHAR(32),
     username CHAR(16),
-    PRIMARY KEY (upc),
+    PRIMARY KEY (upc, username),
     FOREIGN KEY (username) REFERENCES users(username)
 );
 
